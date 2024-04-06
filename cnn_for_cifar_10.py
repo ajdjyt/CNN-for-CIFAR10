@@ -10,6 +10,9 @@ Original file is located at
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
 import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve, auc
+from tensorflow.keras.utils import to_categorical
+import numpy as np
 
 (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
 
@@ -38,3 +41,26 @@ history = model.fit(train_images, train_labels, epochs=20,
 
 test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
 print('\nTest accuracy:', test_acc)
+
+y_pred = model.predict(test_images)
+
+test_labels_one_hot = to_categorical(test_labels, 10)
+fpr, tpr, _ = roc_curve(test_labels_one_hot.ravel(), y_pred.ravel())
+roc_auc = auc(fpr, tpr)
+
+plt.figure()
+plt.plot(fpr, tpr, color='darkorange', lw=2, label='ROC curve (area = %0.2f)' % roc_auc)
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic')
+plt.legend(loc="lower right")
+plt.show()
+
+!pip install graphviz
+
+from tensorflow.keras.utils import plot_model
+# Assuming 'model' is your CNN model
+plot_model(model, to_file='model_diagram.png', show_shapes=True, show_layer_names=True)
